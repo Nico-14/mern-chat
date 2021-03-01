@@ -22,6 +22,13 @@
   scroll-behavior: smooth;
 }
 
+.messages {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
 .footer {
   height: 5rem;
   min-height: 60px;
@@ -94,7 +101,7 @@
 
 .message_container {
   width: 100%;
-  margin-bottom: 0.6em;
+  margin: 0.3em 0;
   display: flex;
   align-items: center;
 }

@@ -19,7 +19,7 @@ export const getChats = async (userId: string) => {
 
   chats = chats.map((chat: any) => {
     chat = chat.toObject();
-    const user = chat.participants.find((user: any) => user.id !== userId);
+    const user = chat.participants.find((user: any) => user._id != userId);
     user.id = user._id;
     delete user._id;
 

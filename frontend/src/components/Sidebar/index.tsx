@@ -135,16 +135,6 @@ const ChatItem = React.memo<ChatItemProps>(
     const lastMessage = chat?.messages[chat?.messages.length - 1];
     const clientId = useSelector((state: RootState) => state.auth.id);
     const self = lastMessage?.from === clientId;
-    let unreadMessagesCount = 0;
-
-    if (chat?.messages)
-      for (let i = chat.messages.length - 1; i >= 0; i--) {
-        if (chat.messages[i].state !== 'SEEN') {
-          unreadMessagesCount++;
-        } else {
-          break;
-        }
-      }
 
     const handleClick = () => {
       if (chat) dispatch(selectChat(chat.id));
@@ -187,8 +177,10 @@ const ChatItem = React.memo<ChatItemProps>(
                   <path d="M9.07749 0.141911C8.78816 -0.0860893 8.36949 -0.0340894 8.14216 0.255911L3.43883 6.26124L1.18616 3.46324C0.954159 3.17724 0.535492 3.13058 0.248826 3.36191C-0.0385075 3.59324 -0.0831742 4.01324 0.146826 4.29924L2.92616 7.75124C3.05349 7.90858 3.24416 7.99991 3.44616 7.99991H3.45083C3.65349 7.99858 3.84549 7.90458 3.97083 7.74391L9.19149 1.07724C9.41883 0.78791 9.36816 0.368577 9.07749 0.141911" />
                 </svg>
               )
+            ) : !self && lastMessage?.state !== 'SEEN' ? (
+              <span className={styles.unread_messages}></span>
             ) : (
-              unreadMessagesCount > 0 && <span className={styles.unread_messages}>{unreadMessagesCount}</span>
+              ''
             )}
           </div>
         </div>

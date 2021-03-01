@@ -124,9 +124,13 @@ const Chat = () => {
       const scrollDistanteToBottom =
         messagesDivRef.current.scrollHeight - (messagesDivRef.current.scrollTop + messagesDivRef.current.clientHeight);
       if (scrollDistanteToBottom < 100 || lastMessage?.from === clientId)
-        messagesDivRef.current.scrollTo(messagesDivRef.current.scrollLeft, messagesDivRef.current.scrollHeight);
+        messagesDivRef.current.scrollTo(
+          messagesDivRef.current.scrollLeft,
+          messagesDivRef.current.scrollHeight + scrollDistanteToBottom
+        );
     }
   }, [lastMessage]);
+
   return (
     <div className={styles.container}>
       {selectedChat && (
@@ -145,11 +149,13 @@ const Chat = () => {
             </div>
           </div>
           <div className={styles.content} ref={messagesDivRef}>
-            <>
-              {selectedChat.messages.map((message) => (
-                <ChatMessage messageId={message.id} chatId={selectedChat.id} key={message.id} />
-              ))}
-            </>
+            <div className={styles.messages}>
+              <>
+                {selectedChat.messages.map((message) => (
+                  <ChatMessage messageId={message.id} chatId={selectedChat.id} key={message.id} />
+                ))}
+              </>
+            </div>
           </div>
           <ChatInput />
         </>
