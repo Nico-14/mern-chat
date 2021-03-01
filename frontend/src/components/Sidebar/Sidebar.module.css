@@ -1,0 +1,248 @@
+.container {
+  position: relative;
+  background: #fff;
+  min-width: 320px;
+  flex: 4;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 14.0351px 0px 25px rgba(86, 128, 248, 0.03), 35.0877px 0px 70px rgba(86, 128, 248, 0.05),
+    23.8596px 5.61404px 50px rgba(0, 0, 0, 0.02);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 1em;
+  height: 4rem;
+  min-height: 60px;
+  justify-content: space-between;
+}
+
+.header_img {
+  border-radius: 100%;
+  height: 70%;
+}
+
+.content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.search {
+  height: 3rem;
+  margin: 0.4em 1em;
+  min-height: 35px;
+}
+
+.search_input {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #fafafa;
+  box-shadow: 0 5px 10px 2px rgba(86, 128, 248, 0.15);
+  border-radius: 6px;
+  padding: 0 0.6em;
+}
+
+.search_input input {
+  background: 0;
+  outline: 0;
+  border: 0;
+  width: 100%;
+  height: 100%;
+  color: #0d1c2e;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0 0 0 1.8rem;
+}
+
+.search_input input::placeholder {
+  color: #707c97;
+}
+
+.search_input svg {
+  position: absolute;
+  fill: #707c97;
+  height: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.chat_list {
+  flex: 12 1 1px;
+  overflow-y: auto;
+}
+
+.chat_item {
+  display: flex;
+  align-items: center;
+  padding: 0.2em 0.8em;
+  height: 4.5rem;
+  cursor: pointer;
+  user-select: none;
+  min-height: 60px;
+}
+
+.chat_item_img {
+  border-radius: 100%;
+  height: 70%;
+}
+
+.chat_item_content {
+  width: 100%;
+  margin-left: 0.6em;
+  min-width: 0;
+}
+
+.chat_item_header,
+.chat_item_message {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat_item_username {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 10px;
+  font-weight: 400;
+  color: #0d1c2e;
+}
+
+.chat_item_date {
+  font-size: 0.8rem;
+  color: #707c97;
+}
+
+.chat_item_message {
+  margin-top: 1px;
+}
+
+.chat_item_message_text {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 90%;
+  font-size: 0.8rem;
+  color: #707c97;
+}
+
+.chat_item:not(.selected):hover {
+  background: #e6ecfe;
+}
+
+.selected {
+  background: rgba(42, 139, 242, 0.8);
+}
+
+.selected .chat_item_username {
+  color: #fff;
+}
+
+.selected .chat_item_message_text,
+.selected .chat_item_date {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.check_icon {
+  fill: #707c97;
+  height: 0.5rem;
+  margin-left: 0.6em;
+}
+
+.selected .check_icon {
+  fill: #fff;
+}
+
+.check_icon.seen {
+  fill: #2a8bf2;
+}
+
+.new_messages .chat_item_username {
+  font-weight: 600;
+}
+
+:not(.selected).new_messages .chat_item_date {
+  color: #2a8bf2;
+}
+
+.selected.new_messages .chat_item_date {
+  color: #fff;
+}
+
+.new_messages .chat_item_message_text {
+  font-weight: 600;
+  color: #0d1c2e;
+}
+
+.selected.new_messages .chat_item_message_text {
+  color: #fff;
+}
+
+.unread_messages {
+  display: block;
+  width: 1.3rem;
+  height: 1.3rem;
+  text-align: center;
+  border-radius: 100%;
+  background: #2a8bf2;
+  font-size: 0.84rem;
+  color: #fff;
+}
+
+.selected .unread_messages {
+  background: #fff;
+  color: #2a8bf2;
+}
+
+.create_chat_button {
+  outline: 0;
+  border: 0;
+  background: linear-gradient(92.68deg, #7cb8f7 0%, #2a8bf2 100%);
+  box-shadow: 6px 6px 25px rgba(42, 139, 242, 0.15), 4px 4px 25px rgba(42, 139, 242, 0.05),
+    10px 6px 25px rgba(42, 139, 242, 0.15);
+  border-radius: 6px;
+  color: #fff;
+  padding: 0.8em 1em;
+  cursor: pointer;
+}
+
+.users_search {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: -100%;
+  background: #fff;
+  z-index: 1;
+}
+
+.users_search.showing {
+  animation: showAnimation 0.15s ease-in 0s 1 forwards;
+}
+
+.users_search.hiding {
+  animation: hideAnimation 0.15s ease-in 0s 1 forwards;
+}
+
+@keyframes showAnimation {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 0;
+  }
+}
+
+@keyframes hideAnimation {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: -100%;
+  }
+}

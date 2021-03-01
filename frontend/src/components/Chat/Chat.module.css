@@ -1,0 +1,170 @@
+.container {
+  background: linear-gradient(180deg, #f3f3fb 0%, #fdfbfd 100%);
+  min-width: 500px;
+  flex: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 1em;
+  border-bottom: 1px solid rgba(112, 124, 151, 0.05);
+  height: 4rem;
+  min-height: 60px;
+}
+
+.content {
+  height: 100%;
+  padding: 0 4em;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.footer {
+  height: 5rem;
+  min-height: 60px;
+  border-top: 1px solid rgba(112, 124, 151, 0.15);
+  display: flex;
+  padding: 0 2em;
+  align-items: center;
+}
+
+.contact_info {
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+.contact_profile_img {
+  border-radius: 100%;
+  height: 70%;
+}
+
+.contact_text {
+  margin-left: 1em;
+  display: flex;
+  flex-direction: column;
+}
+.contact_name {
+  color: #0d1c2e;
+  font-weight: 600;
+}
+
+.last_online {
+  color: #2a8bf2;
+  font-size: 0.8rem;
+}
+
+.message_input {
+  height: 100%;
+  width: 100%;
+  outline: 0;
+  border: 0;
+  background: 0;
+  color: #0d1c2e;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.message_input::placeholder {
+  color: rgba(112, 124, 151, 0.5);
+}
+
+.message_send_button {
+  border: 0;
+  outline: 0;
+  border-radius: 100%;
+  background: linear-gradient(325.78deg, #2a8bf2 14.76%, #7cb8f7 87.3%);
+  box-shadow: 4px 4px 25px rgba(42, 139, 242, 0.15), 2px 2px 25px rgba(42, 139, 242, 0.05),
+    4px 6px 10px rgba(42, 139, 242, 0.15);
+  height: 2rem;
+  width: 2rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message_send_button svg {
+  height: 65%;
+  width: 65%;
+}
+
+.message_container {
+  width: 100%;
+  margin-bottom: 0.6em;
+  display: flex;
+  align-items: center;
+}
+
+.message_options_button {
+  outline: 0;
+  border: 0;
+  background: 0;
+  cursor: pointer;
+  order: 1;
+  margin-left: 1em;
+  opacity: 0;
+}
+
+.message_options_button svg {
+  fill: rgba(112, 124, 151, 0.7);
+}
+
+.message_container:hover .message_options_button {
+  opacity: 1;
+}
+
+.self .message_options_button {
+  order: 0;
+  margin: 0 1em 0 auto;
+}
+
+.message_bubble {
+  background: linear-gradient(90.54deg, #60a9f6 0%, #2a8bf2 100%);
+  box-shadow: 10px 10px 25px rgba(42, 139, 242, 0.1), 15px 15px 35px rgba(42, 139, 242, 0.05),
+    10px 10px 50px rgba(42, 139, 242, 0.1);
+  border-radius: 0 10px 10px 10px;
+  padding: 0.6em 1em;
+  max-width: 70%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.self .message_bubble {
+  background: #ffffff;
+  border: 1px solid rgba(112, 124, 151, 0.25);
+  box-shadow: 10px 10px 25px rgba(112, 124, 151, 0.05), 15px 15px 35px rgba(112, 124, 151, 0.05);
+  border-radius: 10px 10px 0 10px;
+}
+
+.message_text {
+  display: inline-block;
+  color: #fff;
+  font-size: 0.9rem;
+  width: 90%;
+  margin-right: 0.8em;
+}
+
+.message_date {
+  align-self: flex-end;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.7rem;
+}
+
+.self .message_text,
+.self .message_date {
+  color: #707c97;
+}
+
+.check_icon {
+  fill: #b7bdcb;
+  height: 0.5rem;
+  margin-left: 0.6em;
+}
+
+.check_icon.seen {
+  fill: #2a8bf2;
+}
