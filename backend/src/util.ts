@@ -38,5 +38,6 @@ export const getChats = async (userId: string) => {
 
     return { ...chat, id, user, messages };
   });
-  return chats;
+
+  return chats.filter((chat) => chat.messages.length > 0);
 };

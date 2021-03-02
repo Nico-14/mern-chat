@@ -8,6 +8,8 @@ const UPDATE_CLIENT_MESSAGE_ID = 'UPDATE_CLIENT_MESSAGE_ID';
 const REMOVE_TEMP = 'REMOVE_TEMP';
 const UPDATE_MESSAGE_STATE = 'UPDATE_MESSAGE_STATE';
 const LOAD_CHATS = 'LOAD_CHATS';
+const LOAD_OLD_MESSAGES = 'LOAD_OLD_MESSAGES';
+const SET_CHAT_ALL_MESSAGES_ARE_LOADED = 'SET_CHAT_ALL_MESSAGES_ARE_LOADED';
 
 //Actions definitions
 interface AddChatAction {
@@ -69,6 +71,19 @@ interface LoadChatsAction {
   payload: Chat[];
 }
 
+interface LoadOldMessagesAction {
+  type: typeof LOAD_OLD_MESSAGES;
+  payload: {
+    id: string;
+    messages: Message[];
+  };
+}
+
+interface SetChatAllMessagesAreLoadedAction {
+  type: typeof SET_CHAT_ALL_MESSAGES_ARE_LOADED;
+  payload: string;
+}
+
 type ChatsActions =
   | AddChatAction
   | DeleteChatAction
@@ -78,82 +93,78 @@ type ChatsActions =
   | UpdateClientMessageIdAction
   | RemoveTempAction
   | UpdateMessageStateAction
-  | LoadChatsAction;
+  | LoadChatsAction
+  | LoadOldMessagesAction
+  | SetChatAllMessagesAreLoadedAction;
 
 //Actions
-export function addChat(chat: Chat): ChatsActions {
-  return {
-    type: ADD_CHAT,
-    payload: chat,
-  };
-}
+export const addChat = (chat: Chat): ChatsActions => ({
+  type: ADD_CHAT,
+  payload: chat,
+});
 
-export function deleteChat(id: string): ChatsActions {
-  return {
-    type: DELETE_CHAT,
-    payload: id,
-  };
-}
+export const deleteChat = (id: string): ChatsActions => ({
+  type: DELETE_CHAT,
+  payload: id,
+});
 
-export function selectChat(id: string): ChatsActions {
-  return {
-    type: SELECT_CHAT,
-    payload: id,
-  };
-}
+export const selectChat = (id: string): ChatsActions => ({
+  type: SELECT_CHAT,
+  payload: id,
+});
 
-export function addChatMessage(id: string, message: Message): ChatsActions {
+export const addChatMessage = (id: string, message: Message): ChatsActions => {
   return {
     type: ADD_CHAT_MESSAGE,
     payload: { id, message },
   };
-}
+};
 
-export function updateClientChatId(id: string, serverId: string): ChatsActions {
-  return {
-    type: UPDATE_CLIENT_CHAT_ID,
-    payload: {
-      id,
-      serverId,
-    },
-  };
-}
+export const updateClientChatId = (id: string, serverId: string): ChatsActions => ({
+  type: UPDATE_CLIENT_CHAT_ID,
+  payload: {
+    id,
+    serverId,
+  },
+});
 
-export function updateClientMessageId(chatId: string, id: string, serverId: string): ChatsActions {
-  return {
-    type: UPDATE_CLIENT_MESSAGE_ID,
-    payload: {
-      chatId,
-      id,
-      serverId,
-    },
-  };
-}
+export const updateClientMessageId = (chatId: string, id: string, serverId: string): ChatsActions => ({
+  type: UPDATE_CLIENT_MESSAGE_ID,
+  payload: {
+    chatId,
+    id,
+    serverId,
+  },
+});
 
-export function removeTemp(id: string): ChatsActions {
-  return {
-    type: REMOVE_TEMP,
-    payload: id,
-  };
-}
+export const removeTemp = (id: string): ChatsActions => ({
+  type: REMOVE_TEMP,
+  payload: id,
+});
 
-export function updateMessageState(chatId: string, id: string, newState: MessageState): ChatsActions {
-  return {
-    type: UPDATE_MESSAGE_STATE,
-    payload: {
-      chatId,
-      id,
-      newState,
-    },
-  };
-}
+export const updateMessageState = (chatId: string, id: string, newState: MessageState): ChatsActions => ({
+  type: UPDATE_MESSAGE_STATE,
+  payload: {
+    chatId,
+    id,
+    newState,
+  },
+});
 
-export function loadChats(chats: Chat[]): ChatsActions {
-  return {
-    type: LOAD_CHATS,
-    payload: chats,
-  };
-}
+export const loadChats = (chats: Chat[]): ChatsActions => ({
+  type: LOAD_CHATS,
+  payload: chats,
+});
+
+export const loadOldMessages = (id: string, messages: Message[]): ChatsActions => ({
+  type: LOAD_OLD_MESSAGES,
+  payload: { id, messages },
+});
+
+export const setChatAllMessagesAreLoaded = (id: string): ChatsActions => ({
+  type: SET_CHAT_ALL_MESSAGES_ARE_LOADED,
+  payload: id,
+});
 
 const reducer = (state: Chat[] = [], action: ChatsActions): Chat[] => {
   switch (action.type) {
@@ -173,7 +184,12 @@ const reducer = (state: Chat[] = [], action: ChatsActions): Chat[] => {
       );
     case ADD_CHAT_MESSAGE:
       return state.map((chat) =>
-        chat.id === action.payload.id ? { ...chat, messages: [...chat.messages, action.payload.message] } : chat
+        chat.id === action.payload.id
+          ? {
+              ...chat,
+              messages: [...chat.messages, action.payload.message],
+            }
+          : chat
       );
     case UPDATE_CLIENT_CHAT_ID:
       return state.map((chat) => (chat.id === action.payload.id ? { ...chat, id: action.payload.serverId } : chat));
@@ -208,6 +224,20 @@ const reducer = (state: Chat[] = [], action: ChatsActions): Chat[] => {
           messages: chat.messages.map((message) => ({ ...message, date: new Date(message.date) })),
         })),
       ];
+    case LOAD_OLD_MESSAGES:
+      return state.map((chat) =>
+        chat.id === action.payload.id
+          ? {
+              ...chat,
+              messages: [
+                ...action.payload.messages.reverse().map((message) => ({ ...message, date: new Date(message.date) })),
+                ...chat.messages,
+              ],
+            }
+          : chat
+      );
+    case SET_CHAT_ALL_MESSAGES_ARE_LOADED:
+      return state.map((chat) => (chat.id === action.payload ? { ...chat, allMessagesAreLoaded: true } : chat));
     default:
       return state;
   }

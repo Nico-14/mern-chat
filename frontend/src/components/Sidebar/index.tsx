@@ -7,12 +7,6 @@ import styles from './Sidebar.module.css';
 import React from 'react';
 import { v4 as uuid4 } from 'uuid';
 
-interface Message {
-  self: boolean;
-  state: 'SENT' | 'RECEIVED' | 'SEEN';
-  content: string;
-}
-
 interface ChatItemProps {
   chatId: string;
 }
@@ -88,7 +82,16 @@ const UsersSearch = ({ onClose }: UsersSearchProps) => {
                     if (!existingChat.isSelected) dispatch(selectChat(existingChat.id));
                   } else {
                     const id = uuid4();
-                    dispatch(addChat({ user: result, messages: [], id, isSelected: false, isTemp: true }));
+                    dispatch(
+                      addChat({
+                        user: result,
+                        messages: [],
+                        id,
+                        isSelected: false,
+                        isTemp: true,
+                        allMessagesAreLoaded: false,
+                      })
+                    );
                     dispatch(selectChat(id));
                   }
                   handleClick();
@@ -127,73 +130,67 @@ const Header = () => {
   );
 };
 
-const ChatItem = React.memo<ChatItemProps>(
-  function ChatItem({ chatId }: ChatItemProps) {
-    const dispatch = useDispatch();
-    const chat = useSelector((state: RootState) => state.chats.find((chat) => chat.id === chatId));
+const ChatItem = React.memo<ChatItemProps>(function ChatItem({ chatId }: ChatItemProps) {
+  const dispatch = useDispatch();
+  const chat = useSelector((state: RootState) => state.chats.find((chat) => chat.id === chatId));
 
-    const lastMessage = chat?.messages[chat?.messages.length - 1];
-    const clientId = useSelector((state: RootState) => state.auth.id);
-    const self = lastMessage?.from === clientId;
+  const lastMessage = chat?.messages[chat?.messages.length - 1];
+  const clientId = useSelector((state: RootState) => state.auth.id);
+  const self = lastMessage?.from === clientId;
 
-    const handleClick = () => {
-      if (chat) dispatch(selectChat(chat.id));
-    };
+  const handleClick = () => {
+    if (chat && !chat.isSelected) dispatch(selectChat(chat.id));
+  };
 
-    return chat ? (
-      <div
-        className={`${styles.chat_item} ${chat.isSelected ? styles.selected : ''} ${
-          !self && lastMessage?.state !== 'SEEN' ? styles.new_messages : ''
-        }`}
-        onClick={handleClick}
-      >
-        <img
-          src="https://liverampup.com/uploads/celebrity/emily-rudd-dating-parents-movies.jpg"
-          className={styles.chat_item_img}
-          alt="Chat"
-        />
-        <div className={styles.chat_item_content}>
-          <div className={styles.chat_item_header}>
-            <span className={styles.chat_item_username}>{chat.user.username}</span>
-            <span className={styles.chat_item_date}>{`${lastMessage?.date
-              .getHours()
-              .toString()
-              .padStart(2, '0')}:${lastMessage?.date.getMinutes().toString().padStart(2, '0')}`}</span>
-          </div>
-          <div className={styles.chat_item_message}>
-            <span className={styles.chat_item_message_text}>{lastMessage?.content}</span>
-            {lastMessage && self ? (
-              lastMessage.state === 'RECEIVED' || lastMessage.state === 'SEEN' ? (
-                <svg
-                  viewBox="0 0 13 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`${styles.check_icon} ${lastMessage.state === 'SEEN' ? styles.seen : ''} }`}
-                >
-                  <path d="M9.07749 0.141911C8.78816 -0.0860893 8.36949 -0.0340894 8.14216 0.255911L3.43883 6.26124L1.18616 3.46324C0.954159 3.17724 0.535492 3.13058 0.248826 3.36191C-0.0385075 3.59324 -0.0831742 4.01324 0.146826 4.29924L2.92616 7.75124C3.05349 7.90858 3.24416 7.99991 3.44616 7.99991H3.45083C3.65349 7.99858 3.84549 7.90458 3.97083 7.74391L9.19149 1.07724C9.41883 0.78791 9.36816 0.368577 9.07749 0.141911ZM12.4108 0.141911C12.1208 -0.0860893 11.7028 -0.0340894 11.4755 0.255911L6.77216 6.26124L6.36949 5.76191L5.52616 6.83991L6.25949 7.75124C6.38682 7.90858 6.57749 7.99991 6.77949 7.99991H6.78416C6.98682 7.99858 7.17882 7.90458 7.30416 7.74391L12.5248 1.07724C12.7522 0.78791 12.7015 0.368577 12.4108 0.141911ZM4.6533 3.62964L3.80863 4.70697L3.48063 4.29964C3.24996 4.01297 3.29463 3.59297 3.58196 3.36164C3.8693 3.13097 4.28863 3.17697 4.5193 3.46364L4.6533 3.62964Z" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.check_icon}>
-                  <path d="M9.07749 0.141911C8.78816 -0.0860893 8.36949 -0.0340894 8.14216 0.255911L3.43883 6.26124L1.18616 3.46324C0.954159 3.17724 0.535492 3.13058 0.248826 3.36191C-0.0385075 3.59324 -0.0831742 4.01324 0.146826 4.29924L2.92616 7.75124C3.05349 7.90858 3.24416 7.99991 3.44616 7.99991H3.45083C3.65349 7.99858 3.84549 7.90458 3.97083 7.74391L9.19149 1.07724C9.41883 0.78791 9.36816 0.368577 9.07749 0.141911" />
-                </svg>
-              )
-            ) : !self && lastMessage?.state !== 'SEEN' ? (
-              <span className={styles.unread_messages}></span>
+  return chat ? (
+    <div
+      className={`${styles.chat_item} ${chat.isSelected ? styles.selected : ''} ${
+        !self && lastMessage?.state !== 'SEEN' ? styles.new_messages : ''
+      }`}
+      onClick={handleClick}
+    >
+      <img
+        src="https://liverampup.com/uploads/celebrity/emily-rudd-dating-parents-movies.jpg"
+        className={styles.chat_item_img}
+        alt="Chat"
+      />
+      <div className={styles.chat_item_content}>
+        <div className={styles.chat_item_header}>
+          <span className={styles.chat_item_username}>{chat.user.username}</span>
+          <span className={styles.chat_item_date}>{`${lastMessage?.date
+            .getHours()
+            .toString()
+            .padStart(2, '0')}:${lastMessage?.date.getMinutes().toString().padStart(2, '0')}`}</span>
+        </div>
+        <div className={styles.chat_item_message}>
+          <span className={styles.chat_item_message_text}>{lastMessage?.content}</span>
+          {lastMessage && self ? (
+            lastMessage.state === 'RECEIVED' || lastMessage.state === 'SEEN' ? (
+              <svg
+                viewBox="0 0 13 8"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={`${styles.check_icon} ${lastMessage.state === 'SEEN' ? styles.seen : ''} }`}
+              >
+                <path d="M9.07749 0.141911C8.78816 -0.0860893 8.36949 -0.0340894 8.14216 0.255911L3.43883 6.26124L1.18616 3.46324C0.954159 3.17724 0.535492 3.13058 0.248826 3.36191C-0.0385075 3.59324 -0.0831742 4.01324 0.146826 4.29924L2.92616 7.75124C3.05349 7.90858 3.24416 7.99991 3.44616 7.99991H3.45083C3.65349 7.99858 3.84549 7.90458 3.97083 7.74391L9.19149 1.07724C9.41883 0.78791 9.36816 0.368577 9.07749 0.141911ZM12.4108 0.141911C12.1208 -0.0860893 11.7028 -0.0340894 11.4755 0.255911L6.77216 6.26124L6.36949 5.76191L5.52616 6.83991L6.25949 7.75124C6.38682 7.90858 6.57749 7.99991 6.77949 7.99991H6.78416C6.98682 7.99858 7.17882 7.90458 7.30416 7.74391L12.5248 1.07724C12.7522 0.78791 12.7015 0.368577 12.4108 0.141911ZM4.6533 3.62964L3.80863 4.70697L3.48063 4.29964C3.24996 4.01297 3.29463 3.59297 3.58196 3.36164C3.8693 3.13097 4.28863 3.17697 4.5193 3.46364L4.6533 3.62964Z" />
+              </svg>
             ) : (
-              ''
-            )}
-          </div>
+              <svg viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.check_icon}>
+                <path d="M9.07749 0.141911C8.78816 -0.0860893 8.36949 -0.0340894 8.14216 0.255911L3.43883 6.26124L1.18616 3.46324C0.954159 3.17724 0.535492 3.13058 0.248826 3.36191C-0.0385075 3.59324 -0.0831742 4.01324 0.146826 4.29924L2.92616 7.75124C3.05349 7.90858 3.24416 7.99991 3.44616 7.99991H3.45083C3.65349 7.99858 3.84549 7.90458 3.97083 7.74391L9.19149 1.07724C9.41883 0.78791 9.36816 0.368577 9.07749 0.141911" />
+              </svg>
+            )
+          ) : !self && lastMessage?.state !== 'SEEN' ? (
+            <span className={styles.unread_messages}></span>
+          ) : (
+            ''
+          )}
         </div>
       </div>
-    ) : (
-      <></>
-    );
-  } /* ,
-  (prevProps: ChatItemProps, nextProps: ChatItemProps) => {
-    console.log(prevProps.chatId, prevProps.chatId === nextProps.chatId);
-    return prevProps.chatId === nextProps.chatId;
-  } */
-);
+    </div>
+  ) : (
+    <></>
+  );
+});
 
 const ChatList = () => {
   const chats = useSelector((state: RootState) => state.chats.filter((chat) => !chat.isTemp));

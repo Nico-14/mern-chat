@@ -2,9 +2,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import styles from './Chat.module.css';
 import ws from '../../ws';
-import { useEffect, useRef, useState } from 'react';
-import { addChatMessage, removeTemp } from '../../redux/ducks/chats';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { addChatMessage, loadOldMessages, removeTemp, setChatAllMessagesAreLoaded } from '../../redux/ducks/chats';
 import React from 'react';
+import axios from 'axios';
 
 interface ChatMessageProps {
   chatId: string;
@@ -113,23 +114,70 @@ const ChatInput = React.memo(function ChatInput() {
   );
 });
 
-const Chat = () => {
-  const clientId = useSelector((state: RootState) => state.auth.id);
-  const selectedChat = useSelector((state: RootState) => state.chats.find((chat) => chat.isSelected));
-  const messagesDivRef = useRef<HTMLDivElement | null>(null);
-  const lastMessage = selectedChat?.messages[selectedChat.messages.length - 1];
+const useIntersect = (callback: Function) => {
+  const [rootNode, setRootNode] = useState<HTMLElement | null>();
+  const [node, setNode] = useState<HTMLElement | null>();
+  const observer = useRef<IntersectionObserver | null>();
 
   useEffect(() => {
-    if (messagesDivRef.current) {
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          callback();
+        }
+      },
+      { root: rootNode, threshold: 1 }
+    );
+
+    if (node) observer.current?.observe(node);
+
+    return () => observer.current?.disconnect();
+  }, [node, rootNode, callback]);
+
+  return [setRootNode, setNode, callback];
+};
+
+const Chat = () => {
+  const dispatch = useDispatch();
+  const client = useSelector((state: RootState) => state.auth);
+  const selectedChat = useSelector((state: RootState) => state.chats.find((chat) => chat.isSelected));
+  const messagesScrollDiv = useRef<HTMLDivElement | null>();
+
+  const [setRootNode, setNode] = useIntersect(
+    useCallback(() => {
+      if (selectedChat) {
+        const { allMessagesAreLoaded, id, messages } = selectedChat;
+        const oldestMessage = messages[0];
+        if (!allMessagesAreLoaded && oldestMessage) {
+          axios
+            .get<Message[]>(`http://localhost:8080/api/chats/${id}/messages?last=${oldestMessage.id}`, {
+              headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
+            })
+            .then(({ data }) => {
+              if (data?.length > 0) {
+                dispatch(loadOldMessages(id, data));
+              } else {
+                dispatch(setChatAllMessagesAreLoaded(id));
+              }
+            });
+        }
+      }
+    }, [selectedChat?.allMessagesAreLoaded, selectedChat?.id, client.token, selectedChat?.messages])
+  );
+
+  useEffect(() => {
+    const lastMessage = selectedChat?.messages[selectedChat.messages.length - 1];
+    if (messagesScrollDiv.current) {
       const scrollDistanteToBottom =
-        messagesDivRef.current.scrollHeight - (messagesDivRef.current.scrollTop + messagesDivRef.current.clientHeight);
-      if (scrollDistanteToBottom < 100 || lastMessage?.from === clientId)
-        messagesDivRef.current.scrollTo(
-          messagesDivRef.current.scrollLeft,
-          messagesDivRef.current.scrollHeight + scrollDistanteToBottom
+        messagesScrollDiv.current.scrollHeight -
+        (messagesScrollDiv.current.scrollTop + messagesScrollDiv.current.clientHeight);
+      if (scrollDistanteToBottom < 100 || lastMessage?.from === client.id)
+        messagesScrollDiv.current.scrollTo(
+          messagesScrollDiv.current.scrollLeft,
+          messagesScrollDiv.current.scrollHeight + scrollDistanteToBottom
         );
     }
-  }, [lastMessage]);
+  }, [selectedChat?.messages, client.id]);
 
   return (
     <div className={styles.container}>
@@ -148,9 +196,16 @@ const Chat = () => {
               </div>
             </div>
           </div>
-          <div className={styles.content} ref={messagesDivRef}>
+          <div
+            className={styles.content}
+            ref={(el) => {
+              messagesScrollDiv.current = el;
+              setRootNode(el);
+            }}
+          >
             <div className={styles.messages}>
               <>
+                <div ref={(el) => setNode(el)} style={{ height: '10px', width: '100%', background: 'red' }}></div>
                 {selectedChat.messages.map((message) => (
                   <ChatMessage messageId={message.id} chatId={selectedChat.id} key={message.id} />
                 ))}

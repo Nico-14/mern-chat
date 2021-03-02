@@ -19,6 +19,7 @@ declare interface Chat {
   messages: Message[];
   isSelected: boolean;
   isTemp?: boolean;
+  allMessagesAreLoaded: boolean;
 }
 
 type MessageState = 'SENDING' | 'SENT' | 'RECEIVED' | 'SEEN';

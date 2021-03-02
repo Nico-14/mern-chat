@@ -216,6 +216,8 @@
   left: -100%;
   background: #fff;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .users_search.showing {
