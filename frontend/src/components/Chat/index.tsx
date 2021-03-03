@@ -33,21 +33,6 @@ const ChatMessage = React.memo(function ChatMessage({ chatId, messageId }: ChatM
           .toString()
           .padStart(2, '0')}:${message.date.getMinutes().toString().padStart(2, '0')}`}</span>
       </div>
-      {self &&
-        (message.state === 'RECEIVED' || message.state === 'SEEN' ? (
-          <svg
-            viewBox="0 0 13 8"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={`${styles.check_icon} ${message.state === 'SEEN' ? styles.seen : ''} }`}
-          >
-            <path d="M9.07749 0.141911C8.78816 -0.0860893 8.36949 -0.0340894 8.14216 0.255911L3.43883 6.26124L1.18616 3.46324C0.954159 3.17724 0.535492 3.13058 0.248826 3.36191C-0.0385075 3.59324 -0.0831742 4.01324 0.146826 4.29924L2.92616 7.75124C3.05349 7.90858 3.24416 7.99991 3.44616 7.99991H3.45083C3.65349 7.99858 3.84549 7.90458 3.97083 7.74391L9.19149 1.07724C9.41883 0.78791 9.36816 0.368577 9.07749 0.141911ZM12.4108 0.141911C12.1208 -0.0860893 11.7028 -0.0340894 11.4755 0.255911L6.77216 6.26124L6.36949 5.76191L5.52616 6.83991L6.25949 7.75124C6.38682 7.90858 6.57749 7.99991 6.77949 7.99991H6.78416C6.98682 7.99858 7.17882 7.90458 7.30416 7.74391L12.5248 1.07724C12.7522 0.78791 12.7015 0.368577 12.4108 0.141911ZM4.6533 3.62964L3.80863 4.70697L3.48063 4.29964C3.24996 4.01297 3.29463 3.59297 3.58196 3.36164C3.8693 3.13097 4.28863 3.17697 4.5193 3.46364L4.6533 3.62964Z" />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.check_icon}>
-            <path d="M9.07749 0.141911C8.78816 -0.0860893 8.36949 -0.0340894 8.14216 0.255911L3.43883 6.26124L1.18616 3.46324C0.954159 3.17724 0.535492 3.13058 0.248826 3.36191C-0.0385075 3.59324 -0.0831742 4.01324 0.146826 4.29924L2.92616 7.75124C3.05349 7.90858 3.24416 7.99991 3.44616 7.99991H3.45083C3.65349 7.99858 3.84549 7.90458 3.97083 7.74391L9.19149 1.07724C9.41883 0.78791 9.36816 0.368577 9.07749 0.141911" />
-          </svg>
-        ))}
     </div>
   ) : (
     <></>
@@ -77,7 +62,6 @@ const ChatInput = React.memo(function ChatInput() {
         id: msg.clientMsgId,
         date: msg.date,
         content: msg.content,
-        state: 'SENDING' as MessageState,
         from: authSession.id,
       };
 
@@ -142,27 +126,36 @@ const Chat = () => {
   const client = useSelector((state: RootState) => state.auth);
   const selectedChat = useSelector((state: RootState) => state.chats.find((chat) => chat.isSelected));
   const messagesScrollDiv = useRef<HTMLDivElement | null>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [setRootNode, setNode] = useIntersect(
     useCallback(() => {
-      if (selectedChat) {
-        const { allMessagesAreLoaded, id, messages } = selectedChat;
-        const oldestMessage = messages[0];
-        if (!allMessagesAreLoaded && oldestMessage) {
+      if (selectedChat?.id && !isLoading) {
+        const oldestMessage = selectedChat.messages[0];
+        if (!selectedChat.allMessagesAreLoaded && oldestMessage) {
+          setIsLoading(true);
           axios
-            .get<Message[]>(`http://localhost:8080/api/chats/${id}/messages?last=${oldestMessage.id}`, {
+            .get<Message[]>(`http://localhost:8080/api/chats/${selectedChat.id}/messages?last=${oldestMessage.id}`, {
               headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
             })
             .then(({ data }) => {
               if (data?.length > 0) {
-                dispatch(loadOldMessages(id, data));
+                dispatch(loadOldMessages(selectedChat.id, data));
               } else {
-                dispatch(setChatAllMessagesAreLoaded(id));
+                dispatch(setChatAllMessagesAreLoaded(selectedChat.id));
               }
+              setTimeout(setIsLoading, 200, false);
             });
         }
       }
-    }, [selectedChat?.allMessagesAreLoaded, selectedChat?.id, client.token, selectedChat?.messages])
+    }, [
+      selectedChat?.allMessagesAreLoaded,
+      selectedChat?.id,
+      selectedChat?.messages,
+      setIsLoading,
+      isLoading,
+      dispatch,
+    ])
   );
 
   useEffect(() => {
@@ -172,10 +165,14 @@ const Chat = () => {
         messagesScrollDiv.current.scrollHeight -
         (messagesScrollDiv.current.scrollTop + messagesScrollDiv.current.clientHeight);
       if (scrollDistanteToBottom < 100 || lastMessage?.from === client.id)
-        messagesScrollDiv.current.scrollTo(
-          messagesScrollDiv.current.scrollLeft,
-          messagesScrollDiv.current.scrollHeight + scrollDistanteToBottom
-        );
+        setTimeout(() => {
+          if (messagesScrollDiv?.current) {
+            messagesScrollDiv.current.scrollTo(
+              messagesScrollDiv.current.scrollLeft,
+              messagesScrollDiv.current.scrollHeight + scrollDistanteToBottom
+            );
+          }
+        }, 200);
     }
   }, [selectedChat?.messages, client.id]);
 
@@ -192,7 +189,7 @@ const Chat = () => {
               ></img>
               <div className={styles.contact_text}>
                 <span className={styles.contact_name}>{selectedChat.user?.username}</span>
-                <span className={styles.last_online}>last online 5 hours ago</span>
+                {/* <span className={styles.last_online}>last online 5 hours ago</span> */}
               </div>
             </div>
           </div>
@@ -205,7 +202,8 @@ const Chat = () => {
           >
             <div className={styles.messages}>
               <>
-                <div ref={(el) => setNode(el)} style={{ height: '10px', width: '100%', background: 'red' }}></div>
+                {isLoading && <div className={styles.loader}></div>}
+                <div ref={(el) => setNode(el)} style={{ height: '20px', width: '100%' }}></div>
                 {selectedChat.messages.map((message) => (
                   <ChatMessage messageId={message.id} chatId={selectedChat.id} key={message.id} />
                 ))}

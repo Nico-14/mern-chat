@@ -3,25 +3,16 @@ import Chat from './components/Chat';
 import styles from './App.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './redux/store';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { login } from './redux/ducks/auth';
 import ws from './ws';
-import {
-  addChat,
-  addChatMessage,
-  loadChats,
-  updateClientChatId,
-  updateClientMessageId,
-  updateMessageState,
-} from './redux/ducks/chats';
+import { addChat, addChatMessage, loadChats, updateClientChatId, updateClientMessageId } from './redux/ducks/chats';
+import AuthForm from './components/AuthForm';
 
 const App = () => {
   const authSession = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
-
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
 
   useEffect(() => {
     if (sessionStorage.getItem('token')) {
@@ -34,18 +25,9 @@ const App = () => {
           dispatch(loadChats(data.chats));
         });
     }
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    axios.post('http://localhost:8080/api/auth/login', { username, password }).then(({ data }: any) => {
-      dispatch(login(data));
-      dispatch(loadChats(data.chats));
-    });
-  };
+  }, [dispatch]);
 
   useEffect(() => {
-    console.log('useEffect');
     const newMessageListener = (message: Message) => {
       if (message.chat) {
         dispatch(addChat(message.chat));
@@ -58,12 +40,11 @@ const App = () => {
             content: message.content,
             date: new Date(message.date),
             from: message.from,
-            state: message.state,
           })
         );
     };
 
-    const messageChangeStateListener = (message: MessageChangeState) => {
+    const messageChangeStateListener = (message: MessageSent) => {
       if (message.clientChatId) {
         dispatch(updateClientChatId(message.clientChatId, message.chatId));
       }
@@ -71,34 +52,20 @@ const App = () => {
       if (message.clientMsgId) {
         dispatch(updateClientMessageId(message.chatId, message.clientMsgId, message.id));
       }
-
-      dispatch(updateMessageState(message.chatId, message.id, message.newState));
     };
 
     ws.addNewMessageListener(newMessageListener);
-    ws.addMessageChangeStateListener(messageChangeStateListener);
+    ws.addMessageSentListener(messageChangeStateListener);
     return () => {
       ws.removeNewMessageListener(newMessageListener);
-      ws.removeMessageChangeStateListener(messageChangeStateListener);
+      ws.removeMessageSentListener(messageChangeStateListener);
     };
   }, [dispatch]);
 
   return (
     <div className={styles.container}>
       {!authSession.loggedIn ? (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', margin: 'auto' }}>
-          <input
-            placeholder="Username"
-            value={username}
-            onChange={({ currentTarget }) => setUsername(currentTarget.value)}
-          ></input>
-          <input
-            placeholder="Password"
-            value={password}
-            onChange={({ currentTarget }) => setPassword(currentTarget.value)}
-          ></input>
-          <input type="submit" value="login"></input>
-        </form>
+        <AuthForm></AuthForm>
       ) : (
         <>
           <Sidebar />

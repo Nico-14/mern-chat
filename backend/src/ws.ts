@@ -99,12 +99,11 @@ wss.on('connection', (ws: WebSocketClient) => {
               });
             }
 
-            sendMessage(ws, 'MESSAGE_CHANGE_STATE', {
+            sendMessage(ws, 'MESSAGE_SENT', {
               clientChatId: data.clientChatId,
               clientMsgId: data.clientMsgId,
               id: message.id,
               chatId: data.chatId || chat?.id,
-              newState: receiver ? 'RECEIVED' : 'SENT',
             });
           }
         } catch (err) {

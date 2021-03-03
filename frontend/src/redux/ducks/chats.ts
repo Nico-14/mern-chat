@@ -6,7 +6,6 @@ const ADD_CHAT_MESSAGE = 'ADD_CHAT_MESSAGE';
 const UPDATE_CLIENT_CHAT_ID = 'UPDATE_CLIENT_CHAT_ID';
 const UPDATE_CLIENT_MESSAGE_ID = 'UPDATE_CLIENT_MESSAGE_ID';
 const REMOVE_TEMP = 'REMOVE_TEMP';
-const UPDATE_MESSAGE_STATE = 'UPDATE_MESSAGE_STATE';
 const LOAD_CHATS = 'LOAD_CHATS';
 const LOAD_OLD_MESSAGES = 'LOAD_OLD_MESSAGES';
 const SET_CHAT_ALL_MESSAGES_ARE_LOADED = 'SET_CHAT_ALL_MESSAGES_ARE_LOADED';
@@ -57,15 +56,6 @@ interface RemoveTempAction {
   payload: string;
 }
 
-interface UpdateMessageStateAction {
-  type: typeof UPDATE_MESSAGE_STATE;
-  payload: {
-    chatId: string;
-    id: string;
-    newState: MessageState;
-  };
-}
-
 interface LoadChatsAction {
   type: typeof LOAD_CHATS;
   payload: Chat[];
@@ -92,7 +82,6 @@ type ChatsActions =
   | UpdateClientChatIdAction
   | UpdateClientMessageIdAction
   | RemoveTempAction
-  | UpdateMessageStateAction
   | LoadChatsAction
   | LoadOldMessagesAction
   | SetChatAllMessagesAreLoadedAction;
@@ -140,15 +129,6 @@ export const updateClientMessageId = (chatId: string, id: string, serverId: stri
 export const removeTemp = (id: string): ChatsActions => ({
   type: REMOVE_TEMP,
   payload: id,
-});
-
-export const updateMessageState = (chatId: string, id: string, newState: MessageState): ChatsActions => ({
-  type: UPDATE_MESSAGE_STATE,
-  payload: {
-    chatId,
-    id,
-    newState,
-  },
 });
 
 export const loadChats = (chats: Chat[]): ChatsActions => ({
@@ -206,17 +186,6 @@ const reducer = (state: Chat[] = [], action: ChatsActions): Chat[] => {
       );
     case REMOVE_TEMP:
       return state.map((chat) => (chat.id === action.payload ? { ...chat, isTemp: false } : chat));
-    case UPDATE_MESSAGE_STATE:
-      return state.map((chat) =>
-        chat.id === action.payload.chatId
-          ? {
-              ...chat,
-              messages: chat.messages.map((chat) =>
-                chat.id === action.payload.id ? { ...chat, state: action.payload.newState } : chat
-              ),
-            }
-          : chat
-      );
     case LOAD_CHATS:
       return [
         ...(action.payload || []).map((chat) => ({

@@ -9,7 +9,7 @@ export const signUp = async (req: Request, res: Response) => {
     !password ||
     typeof username != 'string' ||
     typeof password != 'string' ||
-    username.length < 3 ||
+    username.length < 6 ||
     username.length > 30 ||
     password.length < 6 ||
     password.length > 30 ||
@@ -46,7 +46,9 @@ export const logIn = async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await UserModel.findOne({ username: username }).populate({
+    const user = await UserModel.findOne({
+      username: { $regex: new RegExp(`^${username.toLowerCase()}$`, 'i') },
+    }).populate({
       path: 'friends',
       select: '-password -friends -createdAt -updatedAt',
     });
@@ -61,7 +63,7 @@ export const logIn = async (req: Request, res: Response) => {
           token: generateToken(user.id),
           chats,
         });
-      }
+      } else res.status(400).send('Wrong username or password!');
     } else res.status(400).send('Wrong username or password!');
   } catch (err) {
     console.log(err);

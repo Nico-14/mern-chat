@@ -13,7 +13,6 @@ const messageSchema = new Schema({
   to: { type: Types.ObjectId, ref: 'User' },
   content: String,
   date: Date,
-  state: { type: String, enum: ['SENT', 'RECEIVED', 'SEEN'], default: 'SENT' },
 });
 
 messageSchema.set('toJSON', {

@@ -21,6 +21,7 @@
 .header_img {
   border-radius: 100%;
   height: 70%;
+  cursor: pointer;
 }
 
 .content {
@@ -29,13 +30,13 @@
   flex-direction: column;
 }
 
-.search {
+.input_container {
   height: 3rem;
   margin: 0.4em 1em;
   min-height: 35px;
 }
 
-.search_input {
+.input {
   position: relative;
   height: 100%;
   width: 100%;
@@ -45,7 +46,7 @@
   padding: 0 0.6em;
 }
 
-.search_input input {
+.input input {
   background: 0;
   outline: 0;
   border: 0;
@@ -57,11 +58,11 @@
   padding: 0 0 0 1.8rem;
 }
 
-.search_input input::placeholder {
+.input input::placeholder {
   color: #707c97;
 }
 
-.search_input svg {
+.input svg {
   position: absolute;
   fill: #707c97;
   height: 1rem;
@@ -148,67 +149,7 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-.check_icon {
-  fill: #707c97;
-  height: 0.5rem;
-  margin-left: 0.6em;
-}
-
-.selected .check_icon {
-  fill: #fff;
-}
-
-.check_icon.seen {
-  fill: #2a8bf2;
-}
-
-.new_messages .chat_item_username {
-  font-weight: 600;
-}
-
-:not(.selected).new_messages .chat_item_date {
-  color: #2a8bf2;
-}
-
-.selected.new_messages .chat_item_date {
-  color: #fff;
-}
-
-.new_messages .chat_item_message_text {
-  font-weight: 600;
-  color: #0d1c2e;
-}
-
-.selected.new_messages .chat_item_message_text {
-  color: #fff;
-}
-
-.unread_messages {
-  display: block;
-  width: 1rem;
-  height: 1rem;
-  text-align: center;
-  border-radius: 100%;
-  background: #2a8bf2;
-}
-
-.selected .unread_messages {
-  background: #fff;
-}
-
-.create_chat_button {
-  outline: 0;
-  border: 0;
-  background: linear-gradient(92.68deg, #7cb8f7 0%, #2a8bf2 100%);
-  box-shadow: 6px 6px 25px rgba(42, 139, 242, 0.15), 4px 4px 25px rgba(42, 139, 242, 0.05),
-    10px 6px 25px rgba(42, 139, 242, 0.15);
-  border-radius: 6px;
-  color: #fff;
-  padding: 0.8em 1em;
-  cursor: pointer;
-}
-
-.users_search {
+.menu {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -220,12 +161,40 @@
   flex-direction: column;
 }
 
-.users_search.showing {
+.menu.showing {
   animation: showAnimation 0.15s ease-in 0s 1 forwards;
 }
 
-.users_search.hiding {
+.menu.hiding {
   animation: hideAnimation 0.15s ease-in 0s 1 forwards;
+}
+
+.menu_header {
+  height: 7rem;
+  border-bottom: 1px solid rgba(112, 124, 151, 0.15);
+  display: flex;
+  align-items: center;
+  padding: 3em 1em 1em 1em;
+}
+
+.menu_close_button {
+  background: 0;
+  outline: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+.menu_close_button svg {
+  height: 1.8rem;
+  width: 1.8rem;
+  fill: #2a8bf2;
+}
+
+.menu_header_text {
+  margin: 0 0 0.2em 1em;
+  color: #2a8bf2;
+  font-weight: 600;
+  font-size: 1.2rem;
 }
 
 @keyframes showAnimation {

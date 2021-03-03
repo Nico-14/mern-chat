@@ -1,17 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 
 type NewMessageListener = (message: Message) => void;
-type MessageChangeStateListener = (message: MessageChangeState) => void;
+type MessageSentListener = (message: MessageSent) => void;
 
 class ChatSocket {
   #newMessageListeners: NewMessageListener[];
-  #messageChangeStateListeners: MessageChangeStateListener[];
+  #messageSentListeners: MessageSentListener[];
 
   #ws!: WebSocket;
 
   constructor() {
     this.#newMessageListeners = [];
-    this.#messageChangeStateListeners = [];
+    this.#messageSentListeners = [];
     this.connect();
   }
 
@@ -46,8 +46,8 @@ class ChatSocket {
               if (typeof listener === 'function') listener(data.payload);
             }
             break;
-          case 'MESSAGE_CHANGE_STATE':
-            for (const listener of this.#messageChangeStateListeners) {
+          case 'MESSAGE_SENT':
+            for (const listener of this.#messageSentListeners) {
               if (typeof listener === 'function') listener(data.payload);
             }
             break;
@@ -76,13 +76,13 @@ class ChatSocket {
     if (index > -1) this.#newMessageListeners.splice(index, 1);
   }
 
-  addMessageChangeStateListener(listener: MessageChangeStateListener) {
-    this.#messageChangeStateListeners.push(listener);
+  addMessageSentListener(listener: MessageSentListener) {
+    this.#messageSentListeners.push(listener);
   }
 
-  removeMessageChangeStateListener(listener: MessageChangeStateListener) {
-    const index = this.#messageChangeStateListeners.indexOf(listener);
-    if (index > -1) this.#messageChangeStateListeners.splice(index, 1);
+  removeMessageSentListener(listener: MessageSentListener) {
+    const index = this.#messageSentListeners.indexOf(listener);
+    if (index > -1) this.#messageSentListeners.splice(index, 1);
   }
 
   addUserChangeStateListener(listener: Function) {}

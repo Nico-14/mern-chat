@@ -19,7 +19,6 @@
   height: 100%;
   padding: 0 4em;
   overflow-y: auto;
-  scroll-behavior: smooth;
 }
 
 .messages {
@@ -59,10 +58,10 @@
   font-weight: 600;
 }
 
-.last_online {
+/* .last_online {
   color: #2a8bf2;
   font-size: 0.8rem;
-}
+} */
 
 .message_input {
   height: 100%;
@@ -130,26 +129,26 @@
 }
 
 .message_bubble {
-  background: linear-gradient(90.54deg, #60a9f6 0%, #2a8bf2 100%);
-  box-shadow: 10px 10px 25px rgba(42, 139, 242, 0.1), 15px 15px 35px rgba(42, 139, 242, 0.05),
-    10px 10px 50px rgba(42, 139, 242, 0.1);
   border-radius: 0 10px 10px 10px;
   padding: 0.6em 1em;
   max-width: 70%;
   display: flex;
   justify-content: space-between;
-}
-
-.self .message_bubble {
   background: #ffffff;
   border: 1px solid rgba(112, 124, 151, 0.25);
   box-shadow: 10px 10px 25px rgba(112, 124, 151, 0.05), 15px 15px 35px rgba(112, 124, 151, 0.05);
-  border-radius: 10px 10px 0 10px;
+}
+
+.self .message_bubble {
+  background: linear-gradient(90.54deg, #60a9f6 0%, #2a8bf2 100%);
+  box-shadow: 10px 10px 25px rgba(42, 139, 242, 0.1), 15px 15px 35px rgba(42, 139, 242, 0.05),
+    10px 10px 50px rgba(42, 139, 242, 0.1);
+  border: 0;
 }
 
 .message_text {
   display: inline-block;
-  color: #fff;
+  color: #707c97;
   font-size: 0.9rem;
   width: 90%;
   margin-right: 0.8em;
@@ -157,21 +156,32 @@
 
 .message_date {
   align-self: flex-end;
-  color: rgba(255, 255, 255, 0.8);
+  color: #707c97;
   font-size: 0.7rem;
 }
 
 .self .message_text,
 .self .message_date {
-  color: #707c97;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.check_icon {
-  fill: #b7bdcb;
-  height: 0.5rem;
-  margin-left: 0.6em;
+.loader {
+  margin: 1em auto;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border-left-color: transparent;
+
+  animation: spin 1s linear infinite;
 }
 
-.check_icon.seen {
-  fill: #2a8bf2;
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

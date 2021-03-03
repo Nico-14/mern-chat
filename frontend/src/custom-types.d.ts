@@ -22,13 +22,11 @@ declare interface Chat {
   allMessagesAreLoaded: boolean;
 }
 
-type MessageState = 'SENDING' | 'SENT' | 'RECEIVED' | 'SEEN';
 declare interface Message {
   id: string;
   from: string;
   content: string;
   date: Date;
-  state: MessageState;
   chat?: Chat;
   chatId?: string;
 }
@@ -39,10 +37,9 @@ declare interface TempChat {
   id?: string;
 }
 
-declare interface MessageChangeState {
+declare interface MessageSent {
   id: message.id;
   chatId: string;
-  newState: MessageState;
   clientMsgId?: string;
   clientChatId?: string;
 }
