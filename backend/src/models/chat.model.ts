@@ -7,15 +7,10 @@ export interface ChatDocument extends Document {
   messages: Types.Array<Types.ObjectId> | Types.Array<MessageDocument>;
 }
 
-const chatSchema = new Schema(
-  {
-    participants: [{ type: Types.ObjectId, ref: 'User' }],
-    messages: [{ type: Types.ObjectId, ref: 'Message' }],
-    // expire_at: { type: Date, default: Date.now, expires: 120 },
-  }
-
-  // { timestamps: true }
-);
+const chatSchema = new Schema({
+  participants: [{ type: Types.ObjectId, ref: 'User' }],
+  messages: [{ type: Types.ObjectId, ref: 'Message' }],
+});
 
 chatSchema.set('toJSON', {
   virtuals: true,

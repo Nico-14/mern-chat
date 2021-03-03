@@ -24,12 +24,12 @@ export const signUp = async (req: Request, res: Response) => {
       return res.status(400).send('Username already use.');
     }
     const user = new UserModel({
-      username,
+      username: username.toLowerCase(),
       password,
     });
     await user.save();
     res.send({
-      username,
+      username: username.toLowerCase(),
       token: generateToken(user.id),
     });
   } catch (err) {
@@ -58,7 +58,7 @@ export const logIn = async (req: Request, res: Response) => {
         const chats = await getChats(user.id);
         return res.send({
           username: user.username,
-          friends: user.friends,
+          displayName: user.displayName,
           id: user.id,
           token: generateToken(user.id),
           chats,

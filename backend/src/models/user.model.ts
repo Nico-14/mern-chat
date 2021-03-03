@@ -1,10 +1,10 @@
-import { model, Schema, Document, Types } from 'mongoose';
+import { model, Schema, Document } from 'mongoose';
 import bcrypt from 'bcrypt';
 
 export interface UserDocument extends Document {
   username: string;
   password: string;
-  friends: Types.Array<Types.ObjectId> | Types.Array<UserDocument>;
+  displayName: string;
   comparePasswords: (password: string) => Promise<boolean>;
 }
 
@@ -20,7 +20,6 @@ const userSchema = new Schema(
       required: true,
     },
     displayName: String,
-    friends: [{ type: Types.ObjectId, ref: 'User' }],
   },
   {
     timestamps: true,

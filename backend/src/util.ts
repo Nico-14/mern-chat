@@ -15,7 +15,7 @@ export const getChats = async (userId: string) => {
       options: { sort: { date: -1 }, limit: 1 },
       select: '-to',
     })
-    .populate({ path: 'participants', select: 'username id' });
+    .populate({ path: 'participants', select: 'username id displayName' });
 
   chats = chats.map((chat: any) => {
     chat = chat.toObject();
