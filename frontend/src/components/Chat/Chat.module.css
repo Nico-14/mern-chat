@@ -53,11 +53,16 @@
   display: flex;
   flex-direction: column;
 }
-.contact_name {
+
+.contact_displayname {
   color: #0d1c2e;
   font-weight: 600;
 }
 
+.contact_username {
+  color: #707c97;
+  font-size: 0.8rem;
+}
 /* .last_online {
   color: #2a8bf2;
   font-size: 0.8rem;

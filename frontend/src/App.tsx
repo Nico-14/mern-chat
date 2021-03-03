@@ -3,7 +3,7 @@ import Chat from './components/Chat';
 import styles from './App.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './redux/store';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
 import { login } from './redux/ducks/auth';
 import ws from './ws';

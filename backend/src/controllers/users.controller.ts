@@ -73,3 +73,5 @@ export const getData = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const editUser = async (req: Request, res: Response) => {};

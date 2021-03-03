@@ -188,8 +188,10 @@ const Chat = () => {
                 className={styles.contact_profile_img}
               ></img>
               <div className={styles.contact_text}>
-                <span className={styles.contact_name}>{selectedChat.user?.username}</span>
-                {/* <span className={styles.last_online}>last online 5 hours ago</span> */}
+                <span className={styles.contact_displayname}>
+                  {selectedChat.user.displayName || selectedChat.user.username}
+                </span>
+                <span className={styles.contact_username}>@{selectedChat.user.username}</span>
               </div>
             </div>
           </div>

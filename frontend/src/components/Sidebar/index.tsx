@@ -72,13 +72,14 @@ const Menu = ({ isOpen, onClose, title, children }: MenuProps) => {
   );
 };
 
-const Header = () => {
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [isProfileMenuVisible, setIsProfileMenuVisible] = useState(false);
+interface UserSearchProps {
+  onItemClick: () => void;
+}
+
+const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
   const [results, setResults] = useState<Array<any>>([]);
   const dispatch = useDispatch();
   const timeoutRef = useRef<number | null>(null);
-
   const token = useSelector((state: RootState) => state.auth.token);
   const existingChats = useSelector((state: RootState) =>
     state.chats.map((chat) => ({ userId: chat.user.id, id: chat.id, isTemp: chat.isTemp, isSelected: chat.isSelected }))
@@ -102,11 +103,6 @@ const Header = () => {
     }
   };
 
-  const handleClickNewChat = () => {
-    setResults([]);
-    setIsSearchVisible(!isSearchVisible);
-  };
-
   const handleItemClick = (result: any) => {
     const existingChat = existingChats.find((chat) => chat.userId === result.id);
     if (existingChat) {
@@ -125,7 +121,71 @@ const Header = () => {
       );
       dispatch(selectChat(id));
     }
-    handleClickNewChat();
+    onItemClick();
+  };
+  return (
+    <>
+      <Input onChange={handleChange}></Input>
+      <div className={styles.chat_list}>
+        {results &&
+          results.map((result) => (
+            <div className={styles.chat_item} key={result.id} onClick={() => handleItemClick(result)}>
+              <img
+                src="https://datosdefamosos.com/wp-content/uploads/2019/11/emily-rudd.jpg"
+                className={styles.chat_item_img}
+                alt="Profile"
+              ></img>
+              <div className={styles.chat_item_content}>
+                <span className={styles.item_username}>@{result.username}</span>
+                <span className={styles.item_display_name}>{result.displayName || result.username}</span>
+              </div>
+            </div>
+          ))}
+      </div>
+    </>
+  );
+};
+
+const ProfileMenu = () => {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const user = useSelector((state: RootState) => ({
+    username: state.auth.username,
+    displayName: state.auth.displayName,
+  }));
+
+  return (
+    <div className={styles.profile_menu_content}>
+      <input type="file" accept="image/*" ref={fileRef} style={{ display: 'none' }} />
+
+      <img
+        src="https://datosdefamosos.com/wp-content/uploads/2019/11/emily-rudd.jpg"
+        className={styles.profile_menu_img}
+        onClick={() => fileRef.current?.click()}
+      ></img>
+
+      <div className={styles.profile_menu_edit}>
+        <label htmlFor="edit_username">Username</label>
+        <input className={styles.profile_menu_input} id="edit_username" value={user.username}></input>
+      </div>
+
+      <div className={styles.profile_menu_edit}>
+        <label htmlFor="edit_displayname">Display name</label>
+        <input
+          className={styles.profile_menu_input}
+          id="edit_displayname"
+          value={user.displayName || user.username}
+        ></input>
+      </div>
+    </div>
+  );
+};
+
+const Header = () => {
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isProfileMenuVisible, setIsProfileMenuVisible] = useState(false);
+
+  const handleClickNewChat = () => {
+    setIsSearchVisible(!isSearchVisible);
   };
 
   const handleClickProfile = () => {
@@ -144,24 +204,11 @@ const Header = () => {
         <Button onClick={handleClickNewChat}>New Chat</Button>
       </div>
       <Menu isOpen={isSearchVisible} onClose={handleClickNewChat} title="New chat">
-        <Input onChange={handleChange}></Input>
-        <div className={styles.chat_list}>
-          {results &&
-            results.map((result) => (
-              <div className={styles.chat_item} key={result.id} onClick={() => handleItemClick(result)}>
-                <img
-                  src="https://datosdefamosos.com/wp-content/uploads/2019/11/emily-rudd.jpg"
-                  className={styles.chat_item_img}
-                  alt="Profile"
-                ></img>
-                <div className={styles.chat_item_content}>
-                  <span>{result.username}</span>
-                </div>
-              </div>
-            ))}
-        </div>
+        <UserSearchMenu onItemClick={handleClickNewChat} />
       </Menu>
-      <Menu isOpen={isProfileMenuVisible} onClose={handleClickProfile} title="Profile"></Menu>
+      <Menu isOpen={isProfileMenuVisible} onClose={handleClickProfile} title="Profile">
+        <ProfileMenu />
+      </Menu>
     </>
   );
 };
@@ -184,7 +231,7 @@ const ChatItem = React.memo<ChatItemProps>(function ChatItem({ chatId }: ChatIte
       />
       <div className={styles.chat_item_content}>
         <div className={styles.chat_item_header}>
-          <span className={styles.chat_item_username}>{chat.user.username}</span>
+          <span className={styles.chat_item_username}>{chat.user.displayName || chat.user.username}</span>
           <span className={styles.chat_item_date}>{`${lastMessage?.date
             .getHours()
             .toString()

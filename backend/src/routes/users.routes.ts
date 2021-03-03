@@ -9,4 +9,5 @@ router.get('/', usersController.search);
 
 router.get('/client/data', usersController.getData);
 
+router.put('/:userId', usersController.editUser);
 export default router;

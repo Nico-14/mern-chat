@@ -1,6 +1,7 @@
 declare interface User {
   id: string;
   username: string;
+  displayName?: string;
 }
 
 declare interface AuthSession extends User {
