@@ -96,7 +96,7 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
     if (currentTarget.value.trim().length > 0) {
       timeoutRef.current = window.setTimeout(() => {
         axios
-          .get(`http://localhost:8080/api/users?query=${currentTarget.value.trim()}`, {
+          .get(`${process.env.REACT_APP_BACKEND_URL}/users?query=${currentTarget.value.trim()}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           })
           .then(({ data }) => {
