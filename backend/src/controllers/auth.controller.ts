@@ -9,7 +9,7 @@ export const signUp = async (req: Request, res: Response) => {
     !password ||
     typeof username != 'string' ||
     typeof password != 'string' ||
-    username.length < 6 ||
+    username.length < 4 ||
     username.length > 30 ||
     password.length < 6 ||
     password.length > 30 ||
@@ -19,7 +19,9 @@ export const signUp = async (req: Request, res: Response) => {
   }
 
   try {
-    const isUsernameAlreadyUse = await UserModel.exists({ username });
+    const isUsernameAlreadyUse = await UserModel.exists({
+      username: { $regex: new RegExp(`^${username.toLowerCase()}$`, 'i') },
+    });
     if (isUsernameAlreadyUse) {
       return res.status(400).send('Username already use.');
     }

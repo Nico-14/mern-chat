@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { addChatMessage, loadOldMessages, removeTemp, setChatAllMessagesAreLoaded } from '../../redux/ducks/chats';
 import React from 'react';
 import axios from 'axios';
+import Avatar from 'react-avatar';
 
 interface ChatMessageProps {
   chatId: string;
@@ -21,11 +22,6 @@ const ChatMessage = React.memo(function ChatMessage({ chatId, messageId }: ChatM
 
   return message ? (
     <div className={`${styles.message_container} ${self ? styles.self : ''}`}>
-      <button className={styles.message_options_button}>
-        <svg width="18" height="4" viewBox="0 0 18 4" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 2C0 0.896 0.896 0 2 0C3.104 0 4 0.896 4 2C4 3.104 3.104 4 2 4C0.896 4 0 3.104 0 2ZM9 0C7.896 0 7 0.896 7 2C7 3.104 7.896 4 9 4C10.104 4 11 3.104 11 2C11 0.896 10.104 0 9 0ZM16 0C14.896 0 14 0.896 14 2C14 3.104 14.896 4 16 4C17.104 4 18 3.104 18 2C18 0.896 17.104 0 16 0Z" />
-        </svg>
-      </button>
       <div className={styles.message_bubble}>
         <span className={styles.message_text}>{message.content}</span>
         <span className={styles.message_date}>{`${message.date
@@ -110,7 +106,7 @@ const useIntersect = (callback: Function) => {
           callback();
         }
       },
-      { root: rootNode, threshold: 1 }
+      { root: rootNode, threshold: 0.5 }
     );
 
     if (node) observer.current?.observe(node);
@@ -128,35 +124,28 @@ const Chat = () => {
   const messagesScrollDiv = useRef<HTMLDivElement | null>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [setRootNode, setNode] = useIntersect(
-    useCallback(() => {
-      if (selectedChat?.id && !isLoading) {
-        const oldestMessage = selectedChat.messages[0];
-        if (!selectedChat.allMessagesAreLoaded && oldestMessage) {
-          setIsLoading(true);
-          axios
-            .get<Message[]>(`http://localhost:8080/api/chats/${selectedChat.id}/messages?last=${oldestMessage.id}`, {
-              headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
-            })
-            .then(({ data }) => {
-              if (data?.length > 0) {
-                dispatch(loadOldMessages(selectedChat.id, data));
-              } else {
-                dispatch(setChatAllMessagesAreLoaded(selectedChat.id));
-              }
-              setTimeout(setIsLoading, 200, false);
-            });
-        }
+  const loadChats = useCallback(() => {
+    if (selectedChat?.id && !isLoading) {
+      const oldestMessage = selectedChat.messages[0];
+      if (!selectedChat.allMessagesAreLoaded && oldestMessage) {
+        setIsLoading(true);
+        axios
+          .get<Message[]>(`http://localhost:8080/api/chats/${selectedChat.id}/messages?last=${oldestMessage.id}`, {
+            headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
+          })
+          .then(({ data }) => {
+            if (data?.length > 0) {
+              dispatch(loadOldMessages(selectedChat.id, data));
+            } else {
+              dispatch(setChatAllMessagesAreLoaded(selectedChat.id));
+            }
+            setTimeout(setIsLoading, 200, false);
+          });
       }
-    }, [
-      selectedChat?.allMessagesAreLoaded,
-      selectedChat?.id,
-      selectedChat?.messages,
-      setIsLoading,
-      isLoading,
-      dispatch,
-    ])
-  );
+    }
+  }, [selectedChat?.allMessagesAreLoaded, selectedChat?.id, selectedChat?.messages, setIsLoading, isLoading, dispatch]);
+
+  const [setRootNode, setNode] = useIntersect(loadChats);
 
   useEffect(() => {
     const lastMessage = selectedChat?.messages[selectedChat.messages.length - 1];
@@ -182,11 +171,7 @@ const Chat = () => {
         <>
           <div className={styles.header}>
             <div className={styles.contact_info}>
-              <img
-                src="https://liverampup.com/uploads/celebrity/emily-rudd-dating-parents-movies.jpg"
-                alt="profile"
-                className={styles.contact_profile_img}
-              ></img>
+              <Avatar name={selectedChat.user.displayName || selectedChat.user.username} size="40" round={true} />
               <div className={styles.contact_text}>
                 <span className={styles.contact_displayname}>
                   {selectedChat.user.displayName || selectedChat.user.username}
@@ -204,7 +189,7 @@ const Chat = () => {
           >
             <div className={styles.messages}>
               <>
-                {isLoading && <div className={styles.loader}></div>}
+                {isLoading && <div className="loader"></div>}
                 <div ref={(el) => setNode(el)} style={{ height: '20px', width: '100%' }}></div>
                 {selectedChat.messages.map((message) => (
                   <ChatMessage messageId={message.id} chatId={selectedChat.id} key={message.id} />

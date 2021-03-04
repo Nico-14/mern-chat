@@ -19,12 +19,16 @@ const AuthForm = () => {
   };
 
   const logIn = () => {
+    console.log('e');
     setErrorMsg('');
-    if (username.trim().length < 6 && password.trim().length < 6) return;
+    if (username.trim().length === 0 || password.trim().length === 0) return;
     setIsLoading(true);
     axios
-      .post('http://localhost:8080/api/auth/login', { username: username.trim(), password: password.trim() })
-      .then(({ data }: any) => {
+      .post<UserData>('http://localhost:8080/api/auth/login', {
+        username: username.trim(),
+        password: password.trim(),
+      })
+      .then(({ data }) => {
         dispatch(login(data));
         dispatch(loadChats(data.chats));
         setIsLoading(true);
@@ -37,11 +41,19 @@ const AuthForm = () => {
 
   const register = () => {
     setErrorMsg('');
-    if (username.trim().length < 6 && password.trim().length < 6) return;
+    if (
+      username.trim().length < 4 ||
+      password.trim().length < 6 ||
+      !/^(?!.*\.\.)(?!_)(?!.*\.$)(?!\d+$)[a-zA-Z0-9_]*$/.test(username)
+    )
+      return;
     setIsLoading(true);
     axios
-      .post('http://localhost:8080/api/auth/signup', { username: username.trim(), password: password.trim() })
-      .then(({ data }: any) => {
+      .post<AuthSession>('http://localhost:8080/api/auth/signup', {
+        username: username.trim(),
+        password: password.trim(),
+      })
+      .then(({ data }) => {
         dispatch(login(data));
         setIsLoading(true);
       })
@@ -67,12 +79,11 @@ const AuthForm = () => {
           onChange={({ currentTarget }) => setPassword(currentTarget.value)}
           className={styles.input}
           disabled={isLoading}
+          type="password"
         ></input>
         <div className={styles.buttons}>
-          <Button onClick={logIn} disabled={isLoading}>
-            Log In
-          </Button>
-          <Button onClick={register} disabled={isLoading}>
+          <Button disabled={isLoading}>Log In</Button>
+          <Button onClick={register} disabled={isLoading} type="button">
             Sign up
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addChat, selectChat } from '../../redux/ducks/chats';
@@ -7,6 +7,10 @@ import styles from './Sidebar.module.css';
 import React from 'react';
 import { v4 as uuid4 } from 'uuid';
 import Button from '../Button';
+import { copyFileSync } from 'fs';
+import { setTimeout } from 'timers';
+import { changeDisplayName, changeUsername } from '../../redux/ducks/auth';
+import Avatar from 'react-avatar';
 
 interface ChatItemProps {
   chatId: string;
@@ -130,11 +134,7 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
         {results &&
           results.map((result) => (
             <div className={styles.chat_item} key={result.id} onClick={() => handleItemClick(result)}>
-              <img
-                src="https://datosdefamosos.com/wp-content/uploads/2019/11/emily-rudd.jpg"
-                className={styles.chat_item_img}
-                alt="Profile"
-              ></img>
+              <Avatar name={result.displayName || result.username} size="48" round={true} />
               <div className={styles.chat_item_content}>
                 <span className={styles.item_username}>@{result.username}</span>
                 <span className={styles.item_display_name}>{result.displayName || result.username}</span>
@@ -147,34 +147,90 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
 };
 
 const ProfileMenu = () => {
-  const fileRef = useRef<HTMLInputElement | null>(null);
+  const timeoutRef = useRef<number | null>();
+  const [errorMessage, setErrorMessage] = useState<any>();
+  const [loading, setLoading] = useState<string | null>(null);
+  const dispatch = useDispatch();
+
   const user = useSelector((state: RootState) => ({
     username: state.auth.username,
     displayName: state.auth.displayName,
   }));
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let { name, value } = e.currentTarget;
+    value = value.trim();
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setErrorMessage(null);
+
+    if (
+      value.length === 0 ||
+      (name === 'username' &&
+        (value.length < 4 ||
+          !/^(?!.*\.\.)(?!_)(?!.*\.$)(?!\d+$)[a-zA-Z0-9_]*$/.test(value) ||
+          user.username.toLowerCase() === value.toLowerCase())) ||
+      (name === 'displayName' && user.displayName === value)
+    )
+      return;
+
+    const data: any = {};
+    if (name === 'username') data.username = value;
+    if (name === 'displayName') data.displayName = value;
+
+    timeoutRef.current = window.setTimeout(() => {
+      setLoading(name);
+      axios
+        .put<User>('http://localhost:8080/api/users/client', data, {
+          headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
+        })
+        .then(({ data }) => {
+          if (name === 'username') {
+            dispatch(changeUsername(data.username));
+          } else if (data.displayName) {
+            dispatch(changeDisplayName(data.displayName));
+          }
+          setLoading(null);
+          setErrorMessage(null);
+        })
+        .catch((err: AxiosError) => {
+          setLoading(null);
+          setErrorMessage({ name, msg: err.response?.data });
+        });
+    }, 500);
+  };
+
   return (
     <div className={styles.profile_menu_content}>
-      <input type="file" accept="image/*" ref={fileRef} style={{ display: 'none' }} />
-
-      <img
-        src="https://datosdefamosos.com/wp-content/uploads/2019/11/emily-rudd.jpg"
-        className={styles.profile_menu_img}
-        onClick={() => fileRef.current?.click()}
-      ></img>
-
       <div className={styles.profile_menu_edit}>
         <label htmlFor="edit_username">Username</label>
-        <input className={styles.profile_menu_input} id="edit_username" value={user.username}></input>
+        <div className={styles.profile_menu_input_container}>
+          <input
+            className={styles.profile_menu_input}
+            id="edit_username"
+            name="username"
+            defaultValue={user.username}
+            onChange={handleChange}
+            disabled={loading !== null}
+          ></input>
+          {loading === 'username' && <div className={`loader primary ${styles.profile_menu_loader}`}></div>}
+        </div>
+        {errorMessage?.name === 'username' && <p className={styles.profile_menu_error_msg}>{errorMessage.msg}</p>}
       </div>
 
       <div className={styles.profile_menu_edit}>
         <label htmlFor="edit_displayname">Display name</label>
-        <input
-          className={styles.profile_menu_input}
-          id="edit_displayname"
-          value={user.displayName || user.username}
-        ></input>
+        <div className={styles.profile_menu_input_container}>
+          <input
+            className={styles.profile_menu_input}
+            id="edit_displayname"
+            name="displayName"
+            defaultValue={user.displayName || user.username}
+            onChange={handleChange}
+            disabled={loading !== null}
+          ></input>
+          {loading === 'displayName' && <div className={`loader primary ${styles.profile_menu_loader}`}></div>}
+        </div>
+        {errorMessage?.name === 'displayName' && <p className={styles.profile_menu_error_msg}>{errorMessage.msg}</p>}
       </div>
     </div>
   );
@@ -183,6 +239,10 @@ const ProfileMenu = () => {
 const Header = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isProfileMenuVisible, setIsProfileMenuVisible] = useState(false);
+  const user = useSelector((state: RootState) => ({
+    username: state.auth.username,
+    displayName: state.auth.displayName,
+  }));
 
   const handleClickNewChat = () => {
     setIsSearchVisible(!isSearchVisible);
@@ -195,12 +255,19 @@ const Header = () => {
   return (
     <>
       <div className={styles.header}>
-        <img
-          src="https://datosdefamosos.com/wp-content/uploads/2019/11/emily-rudd.jpg"
-          className={styles.header_img}
-          alt="Profile"
-          onClick={handleClickProfile}
-        ></img>
+        <div className={styles.header_profile}>
+          <Avatar
+            name={user.displayName || user.username}
+            size="42"
+            round={true}
+            onClick={handleClickProfile}
+            style={{ cursor: 'pointer' }}
+          />
+          <div className={styles.header_profile_name}>
+            <span className={styles.contact_displayname}>{user.displayName || user.username}</span>
+            <span className={styles.contact_username}>@{user.username}</span>
+          </div>
+        </div>
         <Button onClick={handleClickNewChat}>New Chat</Button>
       </div>
       <Menu isOpen={isSearchVisible} onClose={handleClickNewChat} title="New chat">
@@ -224,11 +291,7 @@ const ChatItem = React.memo<ChatItemProps>(function ChatItem({ chatId }: ChatIte
 
   return chat ? (
     <div className={`${styles.chat_item} ${chat.isSelected ? styles.selected : ''}`} onClick={handleClick}>
-      <img
-        src="https://liverampup.com/uploads/celebrity/emily-rudd-dating-parents-movies.jpg"
-        className={styles.chat_item_img}
-        alt="Chat"
-      />
+      <Avatar name={chat.user.displayName || chat.user.username} size="48" round={true} />
       <div className={styles.chat_item_content}>
         <div className={styles.chat_item_header}>
           <span className={styles.chat_item_username}>{chat.user.displayName || chat.user.username}</span>

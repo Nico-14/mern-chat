@@ -50,3 +50,27 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: #b7bdcb;
 }
+
+.loader {
+  margin: 1em auto;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border-left-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+.loader.primary {
+  border-color: rgba(42, 139, 242, 0.8);
+  border-left-color: transparent;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

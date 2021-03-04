@@ -6,8 +6,9 @@ import { getChats } from '../util';
 export const search = async (req: Request, res: Response) => {
   const { query } = req.query;
   if (query) {
+    console.log(req.user?.id);
     try {
-      const users = await UserModel.find({ username: new RegExp(query.toString(), 'i') });
+      const users = await UserModel.find({ username: new RegExp(query.toString(), 'i'), _id: { $ne: req.user?.id } });
       res.send(
         users.map((user) => ({
           id: user._id,
@@ -43,11 +44,21 @@ export const getData = async (req: Request, res: Response) => {
 };
 
 export const editUser = async (req: Request, res: Response) => {
-  const { userId } = req.params;
   const { username, displayName } = req.body;
 
+  if (
+    (typeof username != 'string' && typeof displayName != 'string') ||
+    username?.length < 4 ||
+    username?.length > 30 ||
+    displayName?.length < 6 ||
+    displayName?.length > 30 ||
+    (username && !/^(?!.*\.\.)(?!_)(?!.*\.$)(?!\d+$)[a-zA-Z0-9_]*$/.test(username))
+  ) {
+    return res.status(400).send('Please send the form data.');
+  }
+
   try {
-    if (req.user?.id && (userId === req.user.id || userId === 'client')) {
+    if (req.user?.id) {
       const query: any = {};
       if (username) query.username = username;
       if (displayName) query.displayName = displayName;
@@ -69,4 +80,8 @@ export const editUser = async (req: Request, res: Response) => {
   } catch {
     res.sendStatus(500);
   }
+};
+
+export const getLastUsers = (req: Request, res: Response) => {
+  res.send('puto');
 };

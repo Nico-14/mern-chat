@@ -43,11 +43,6 @@
   align-items: center;
 }
 
-.contact_profile_img {
-  border-radius: 100%;
-  height: 70%;
-}
-
 .contact_text {
   margin-left: 1em;
   display: flex;
@@ -110,29 +105,6 @@
   align-items: center;
 }
 
-.message_options_button {
-  outline: 0;
-  border: 0;
-  background: 0;
-  cursor: pointer;
-  order: 1;
-  margin-left: 1em;
-  opacity: 0;
-}
-
-.message_options_button svg {
-  fill: rgba(112, 124, 151, 0.7);
-}
-
-.message_container:hover .message_options_button {
-  opacity: 1;
-}
-
-.self .message_options_button {
-  order: 0;
-  margin: 0 1em 0 auto;
-}
-
 .message_bubble {
   border-radius: 0 10px 10px 10px;
   padding: 0.6em 1em;
@@ -149,6 +121,8 @@
   box-shadow: 10px 10px 25px rgba(42, 139, 242, 0.1), 15px 15px 35px rgba(42, 139, 242, 0.05),
     10px 10px 50px rgba(42, 139, 242, 0.1);
   border: 0;
+  border-radius: 10px 0 10px 10px;
+  margin-left: auto;
 }
 
 .message_text {
@@ -168,25 +142,4 @@
 .self .message_text,
 .self .message_date {
   color: rgba(255, 255, 255, 0.8);
-}
-
-.loader {
-  margin: 1em auto;
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border-left-color: transparent;
-
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }

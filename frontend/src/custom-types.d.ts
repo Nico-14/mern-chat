@@ -11,7 +11,7 @@ declare interface AuthSession extends User {
 }
 
 declare interface UserData extends AuthSession {
-  chats?: [];
+  chats: [];
 }
 
 declare interface Chat {
