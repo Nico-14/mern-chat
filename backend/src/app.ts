@@ -14,8 +14,8 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-app.use('/api/auth', authRoutes);
-app.use('/api/chats', authMiddleware(), chatRoutes);
-app.use('/api/users', authMiddleware(), usersRoutes);
+app.use('/auth', authRoutes);
+app.use('/chats', authMiddleware(), chatRoutes);
+app.use('/users', authMiddleware(), usersRoutes);
 
 export default app;

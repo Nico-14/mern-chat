@@ -33,7 +33,7 @@ type AuthActions = LoginAction | ChangeUsernameAction | ChangeDisplayNameAction;
 
 //Actions
 export const login = (newSession: AuthSession): AuthActions => {
-  sessionStorage.setItem('token', newSession.token);
+  localStorage.setItem('token', newSession.token);
   ws.auth();
 
   return {

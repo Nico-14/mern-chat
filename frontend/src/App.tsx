@@ -16,10 +16,10 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (isLoading && sessionStorage.getItem('token')) {
+    if (isLoading && localStorage.getItem('token')) {
       axios
-        .get<UserData>('http://localhost:8080/api/users/client/data', {
-          headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
+        .get<UserData>(process.env.REACT_APP_BACKEND_URL + '/users/client/data', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
         .then(({ data }) => {
           dispatch(login(data));
@@ -47,7 +47,7 @@ const App = () => {
         );
     };
 
-    const messageChangeStateListener = (message: MessageSent) => {
+    const messageSentListener = (message: MessageSent) => {
       if (message.clientChatId) {
         dispatch(updateClientChatId(message.clientChatId, message.chatId));
       }
@@ -58,10 +58,10 @@ const App = () => {
     };
 
     ws.addNewMessageListener(newMessageListener);
-    ws.addMessageSentListener(messageChangeStateListener);
+    ws.addMessageSentListener(messageSentListener);
     return () => {
       ws.removeNewMessageListener(newMessageListener);
-      ws.removeMessageSentListener(messageChangeStateListener);
+      ws.removeMessageSentListener(messageSentListener);
     };
   }, [dispatch]);
 

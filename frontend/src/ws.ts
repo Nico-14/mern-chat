@@ -20,18 +20,18 @@ class ChatSocket {
   }
 
   auth() {
-    if (this.#ws.readyState !== WebSocket.OPEN || !sessionStorage.getItem('token')) return;
+    if (this.#ws.readyState !== WebSocket.OPEN || !localStorage.getItem('token')) return;
     const msg = {
       type: 'AUTHENTICATE',
       payload: {
-        token: sessionStorage.getItem('token'),
+        token: localStorage.getItem('token'),
       },
     };
     this.#ws.send(JSON.stringify(msg));
   }
 
   connect() {
-    this.#ws = new WebSocket('ws://localhost:8080/ws');
+    this.#ws = new WebSocket(`ws://${process.env.REACT_APP_BACKEND_URL?.replace('https://', '')}/ws`);
 
     this.#ws.onopen = () => {
       this.auth();
@@ -50,8 +50,6 @@ class ChatSocket {
             for (const listener of this.#messageSentListeners) {
               if (typeof listener === 'function') listener(data.payload);
             }
-            break;
-          case 'USER_CHANGE_STATE':
             break;
           default:
         }
@@ -84,8 +82,6 @@ class ChatSocket {
     const index = this.#messageSentListeners.indexOf(listener);
     if (index > -1) this.#messageSentListeners.splice(index, 1);
   }
-
-  addUserChangeStateListener(listener: Function) {}
 
   sendMessage(
     content: string,

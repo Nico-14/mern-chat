@@ -24,7 +24,7 @@ const AuthForm = () => {
     if (username.trim().length === 0 || password.trim().length === 0) return;
     setIsLoading(true);
     axios
-      .post<UserData>('http://localhost:8080/api/auth/login', {
+      .post<UserData>(process.env.REACT_APP_BACKEND_URL + '/auth/login', {
         username: username.trim(),
         password: password.trim(),
       })
@@ -49,7 +49,7 @@ const AuthForm = () => {
       return;
     setIsLoading(true);
     axios
-      .post<AuthSession>('http://localhost:8080/api/auth/signup', {
+      .post<AuthSession>(process.env.REACT_APP_BACKEND_URL + '/auth/signup', {
         username: username.trim(),
         password: password.trim(),
       })

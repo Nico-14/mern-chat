@@ -6,7 +6,6 @@ import { getChats } from '../util';
 export const search = async (req: Request, res: Response) => {
   const { query } = req.query;
   if (query) {
-    console.log(req.user?.id);
     try {
       const users = await UserModel.find({ username: new RegExp(query.toString(), 'i'), _id: { $ne: req.user?.id } });
       res.send(
@@ -82,6 +81,14 @@ export const editUser = async (req: Request, res: Response) => {
   }
 };
 
-export const getLastUsers = (req: Request, res: Response) => {
-  res.send('puto');
+export const getLastUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await UserModel.find({ _id: { $ne: req.user?.id } })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .select('-password -updatedAt -createdAt');
+    res.send(users);
+  } catch {
+    res.sendStatus(500);
+  }
 };

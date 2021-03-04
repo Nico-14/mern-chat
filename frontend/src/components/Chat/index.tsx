@@ -130,9 +130,12 @@ const Chat = () => {
       if (!selectedChat.allMessagesAreLoaded && oldestMessage) {
         setIsLoading(true);
         axios
-          .get<Message[]>(`http://localhost:8080/api/chats/${selectedChat.id}/messages?last=${oldestMessage.id}`, {
-            headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
-          })
+          .get<Message[]>(
+            `${process.env.REACT_APP_BACKEND_URL}/chats/${selectedChat.id}/messages?last=${oldestMessage.id}`,
+            {
+              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            }
+          )
           .then(({ data }) => {
             if (data?.length > 0) {
               dispatch(loadOldMessages(selectedChat.id, data));

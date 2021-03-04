@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addChat, selectChat } from '../../redux/ducks/chats';
 import { RootState } from '../../redux/store';
@@ -7,8 +7,6 @@ import styles from './Sidebar.module.css';
 import React from 'react';
 import { v4 as uuid4 } from 'uuid';
 import Button from '../Button';
-import { copyFileSync } from 'fs';
-import { setTimeout } from 'timers';
 import { changeDisplayName, changeUsername } from '../../redux/ducks/auth';
 import Avatar from 'react-avatar';
 
@@ -84,7 +82,8 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
   const [results, setResults] = useState<Array<any>>([]);
   const dispatch = useDispatch();
   const timeoutRef = useRef<number | null>(null);
-  const token = useSelector((state: RootState) => state.auth.token);
+  const [lastUsers, setLastUsers] = useState<User[]>([]);
+
   const existingChats = useSelector((state: RootState) =>
     state.chats.map((chat) => ({ userId: chat.user.id, id: chat.id, isTemp: chat.isTemp, isSelected: chat.isSelected }))
   );
@@ -98,7 +97,7 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
       timeoutRef.current = window.setTimeout(() => {
         axios
           .get(`http://localhost:8080/api/users?query=${currentTarget.value.trim()}`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           })
           .then(({ data }) => {
             if (data?.length > 0) setResults(data);
@@ -127,12 +126,23 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
     }
     onItemClick();
   };
+
+  useEffect(() => {
+    axios
+      .get<User[]>(process.env.REACT_APP_BACKEND_URL + '/users/last', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
+      .then(({ data }) => {
+        setLastUsers(data);
+      });
+  }, [setLastUsers]);
+
   return (
     <>
       <Input onChange={handleChange}></Input>
-      <div className={styles.chat_list}>
-        {results &&
-          results.map((result) => (
+      {results && results.length > 0 ? (
+        <div className={styles.chat_list}>
+          {results.map((result) => (
             <div className={styles.chat_item} key={result.id} onClick={() => handleItemClick(result)}>
               <Avatar name={result.displayName || result.username} size="48" round={true} />
               <div className={styles.chat_item_content}>
@@ -141,7 +151,23 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
               </div>
             </div>
           ))}
-      </div>
+        </div>
+      ) : (
+        <>
+          <span className={styles.last_users}>Last users</span>
+          <div className={styles.chat_list}>
+            {lastUsers.map((user) => (
+              <div className={styles.chat_item} key={user.id} onClick={() => handleItemClick(user)}>
+                <Avatar name={user.displayName || user.username} size="48" round={true} />
+                <div className={styles.chat_item_content}>
+                  <span className={styles.item_username}>@{user.username}</span>
+                  <span className={styles.item_display_name}>{user.displayName || user.username}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </>
   );
 };
@@ -180,8 +206,8 @@ const ProfileMenu = () => {
     timeoutRef.current = window.setTimeout(() => {
       setLoading(name);
       axios
-        .put<User>('http://localhost:8080/api/users/client', data, {
-          headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
+        .put<User>(process.env.REACT_APP_BACKEND_URL + '/users/client', data, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
         .then(({ data }) => {
           if (name === 'username') {
@@ -331,7 +357,6 @@ const Sidebar = () => {
     <div className={styles.container}>
       <Header />
       <div className={styles.content}>
-        <Input />
         <ChatList />
       </div>
     </div>
