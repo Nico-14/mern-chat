@@ -17,8 +17,7 @@ export const getMessages = async (req: Request, res: Response) => {
       });
 
       res.send(chat?.messages);
-    } catch (err) {
-      console.log(err);
+    } catch {
       res.sendStatus(500);
     }
   } else {

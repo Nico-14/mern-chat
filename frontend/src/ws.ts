@@ -40,7 +40,6 @@ class ChatSocket {
 
       this.#ws.onmessage = (ev: MessageEvent) => {
         const data = JSON.parse(ev.data);
-        console.log(data.type, data.payload);
 
         switch (data.type) {
           case 'NEW_MESSAGE':

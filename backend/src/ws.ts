@@ -44,7 +44,6 @@ wss.on('connection', (ws: WebSocketClient) => {
         if (!err) {
           ws.id = user.id;
           onlineUsers.set(user.id, ws);
-          console.log(`User with ID ${ws.id} connected`);
         }
       });
     })
@@ -59,7 +58,6 @@ wss.on('connection', (ws: WebSocketClient) => {
             data.content.trim().length > 0 &&
             (await UserModel.exists({ _id: data.to }))
           ) {
-            console.log('New message', data);
             const receiver = onlineUsers.get(data.to);
 
             const message = new MessageModel({
@@ -106,16 +104,12 @@ wss.on('connection', (ws: WebSocketClient) => {
               chatId: data.chatId || chat?.id,
             });
           }
-        } catch (err) {
-          console.log(err);
-        }
+        } catch {}
       }
-    })
-    .on('update-message-status', (data: any) => {});
+    });
 
   ws.on('close', () => {
     if (ws.id) {
-      console.log(ws.id, 'disconnected');
       onlineUsers.delete(ws.id);
     }
   });

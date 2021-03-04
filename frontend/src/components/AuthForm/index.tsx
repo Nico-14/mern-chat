@@ -19,7 +19,6 @@ const AuthForm = () => {
   };
 
   const logIn = () => {
-    console.log('e');
     setErrorMsg('');
     if (username.trim().length === 0 || password.trim().length === 0) return;
     setIsLoading(true);

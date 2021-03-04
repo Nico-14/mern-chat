@@ -34,8 +34,7 @@ export const signUp = async (req: Request, res: Response) => {
       username: username.toLowerCase(),
       token: generateToken(user.id),
     });
-  } catch (err) {
-    console.log(err);
+  } catch {
     res.sendStatus(500);
   }
 };
@@ -67,8 +66,7 @@ export const logIn = async (req: Request, res: Response) => {
         });
       } else res.status(400).send('Wrong username or password!');
     } else res.status(400).send('Wrong username or password!');
-  } catch (err) {
-    console.log(err);
+  } catch {
     res.sendStatus(500);
   }
 };
