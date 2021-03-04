@@ -154,7 +154,7 @@ const UserSearchMenu = ({ onItemClick }: UserSearchProps) => {
         </div>
       ) : (
         <>
-          <span className={styles.last_users}>Last users</span>
+          <span className={styles.last_users}>Latest users</span>
           <div className={styles.chat_list}>
             {lastUsers.map((user) => (
               <div className={styles.chat_item} key={user.id} onClick={() => handleItemClick(user)}>
