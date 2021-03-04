@@ -31,7 +31,9 @@ class ChatSocket {
   }
 
   connect() {
-    this.#ws = new WebSocket(`ws://${process.env.REACT_APP_BACKEND_URL?.replace('https://', '')}/ws`);
+    try {
+      this.#ws = new WebSocket(`wss://${process.env.REACT_APP_BACKEND_URL?.replace('https://', '')}/ws`);
+    } catch {}
 
     this.#ws.onopen = () => {
       this.auth();
